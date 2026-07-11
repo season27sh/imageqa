@@ -40,7 +40,7 @@ def answer_image(data: RequestData):
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-2.5-pro",
             contents=[
                 image,
                 f"""
