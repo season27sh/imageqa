@@ -29,17 +29,30 @@ class RequestData(BaseModel):
 @app.post("/answer-image")
 def answer_image(data: RequestData):
 
-    image_bytes = base64.b64decode(data.image_base64)
-    image = Image.open(io.BytesIO(image_bytes))
+    try:
+        image_data = data.image_base64
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[
-            data.question,
-            image
-        ]
-    )
+        # Remove data URL prefix if present
+        if "," in image_data:
+            image_data = image_data.split(",")[1]
 
-    return {
-        "answer": response.text.strip()
-    }
+        image_bytes = base64.b64decode(image_data)
+
+        image = Image.open(io.BytesIO(image_bytes))
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[
+                data.question,
+                image
+            ]
+        )
+
+        return {
+            "answer": response.text.strip()
+        }
+
+    except Exception as e:
+        return {
+            "answer": f"ERROR: {str(e)}"
+        }
