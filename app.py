@@ -67,7 +67,12 @@ Rules:
         answer = answer.replace("Rs.", "")
         answer = answer.replace("Rs", "")
         answer = answer.strip()
-
+        
+        print("=" * 50)
+        print("QUESTION:", data.question)
+        print("ANSWER:", answer)
+        print("=" * 50)
+        
         return {"answer": answer}
 
     except Exception as e:
