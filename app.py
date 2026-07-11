@@ -32,27 +32,43 @@ def answer_image(data: RequestData):
     try:
         image_data = data.image_base64
 
-        # Remove data URL prefix if present
         if "," in image_data:
             image_data = image_data.split(",")[1]
 
         image_bytes = base64.b64decode(image_data)
 
-        image = Image.open(io.BytesIO(image_bytes))
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=[
-                data.question,
-                image
+                image,
+                f"""
+Answer the following question using only the image.
+
+Question:
+{data.question}
+
+Rules:
+- Return ONLY the answer.
+- Do not explain.
+- If numeric, return only the number.
+- No currency symbols.
+- No units unless asked.
+"""
             ]
         )
 
-        return {
-            "answer": response.text.strip()
-        }
+        answer = response.text.strip()
+
+        answer = answer.replace("```", "")
+        answer = answer.replace("`", "")
+        answer = answer.replace("₹", "")
+        answer = answer.replace("Rs.", "")
+        answer = answer.replace("Rs", "")
+        answer = answer.strip()
+
+        return {"answer": answer}
 
     except Exception as e:
-        return {
-            "answer": f"ERROR: {str(e)}"
-        }
+        return {"answer": f"ERROR: {str(e)}"}
